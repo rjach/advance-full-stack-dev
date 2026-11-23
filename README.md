@@ -6,6 +6,7 @@ Coursework for Advanced Full Stack Development. Each workshop has its own folder
 | --- | --- | --- |
 | [`workshop1/`](workshop1) | CRUD for Students and Courses with MySQL | Done |
 | [`workshop2/`](workshop2) | MVC and DRY refactor: controllers, resource routes, Blade components | Done |
+| [`workshop3/`](workshop3) | REST API for Students and Courses: Form Requests, API Resources | Done |
 
 **Stack:** PHP 8.3+, Laravel 13, MySQL. The tests run on in-memory SQLite.
 
@@ -83,6 +84,38 @@ Browser → Route → Controller (validates) → Model → MySQL → Model → C
 
 ---
 
+## Workshop 3: REST API
+
+The backend now also serves a mobile app. The web app from Workshop 2 is unchanged, and a JSON API is added next to it under `/api`.
+
+| Method | URL | Success | Failure |
+| --- | --- | --- | --- |
+| GET | `/api/students`, `/api/courses` | 200 list in `data` | |
+| POST | `/api/students`, `/api/courses` | 201 created resource | 422 validation errors |
+| GET | `/api/students/{id}`, `/api/courses/{id}` | 200 resource | 404 |
+| PUT/PATCH | `/api/students/{id}`, `/api/courses/{id}` | 200 updated resource | 404, 422 |
+| DELETE | `/api/students/{id}`, `/api/courses/{id}` | 204 no content | 404 |
+
+- `php artisan install:api` adds Sanctum and `routes/api.php`.
+- `Api\StudentController` and `Api\CourseController` are separate from the web controllers and registered with `Route::apiResource()`.
+- Validation lives in Form Requests (`Store/UpdateStudentRequest`, `Store/UpdateCourseRequest`). The web controllers use the same classes, so the rules still exist only once.
+- `StudentResource` and `CourseResource` map the models to JSON. Student output includes the computed `age`.
+- API route names are prefixed with `api.` (for example `api.students.index`). Without the prefix they would overwrite the web route names used by `route()` in the Blade views.
+- Send `Accept: application/json` so errors come back as JSON.
+
+Key files:
+
+```
+workshop3/
+├── routes/api.php
+├── app/Http/Controllers/Api/{Student,Course}Controller.php
+├── app/Http/Requests/{Student,Course}/{Store,Update}*Request.php
+├── app/Http/Resources/{Student,Course}Resource.php
+└── tests/Feature/{Student,Course}ApiTest.php
+```
+
+---
+
 ## Running a workshop
 
 Every workshop is set up the same way. Replace `workshopN` with the folder you want.
@@ -101,7 +134,7 @@ php artisan migrate
 php artisan serve
 ```
 
-Open <http://127.0.0.1:8000/students> or <http://127.0.0.1:8000/courses>.
+Open <http://127.0.0.1:8000/students> or <http://127.0.0.1:8000/courses>. In Workshop 3 the API is at <http://127.0.0.1:8000/api/students> and <http://127.0.0.1:8000/api/courses>.
 
 Useful commands:
 
